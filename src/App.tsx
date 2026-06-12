@@ -11,6 +11,7 @@ import {
   loadPhotoUrls,
 } from './storage'
 import { encodeCard, decodeCard } from './swap'
+import { randomWords } from './walkItems'
 import { makeCardImage } from './boardImage'
 import { popConfetti } from './confetti'
 import { shareCard, saveImage, shareToLine, shareToX } from './share'
@@ -123,6 +124,26 @@ export default function App() {
       return { ...b, words }
     })
     setEditorIndex(null)
+  }
+
+  // ── ランダムでお題を自動入力 ──
+  const randomFill = () => {
+    setBoard((b) => {
+      const filled = b.words.filter(Boolean)
+      const emptyIdx = b.words.flatMap((w, i) => (w ? [] : [i]))
+      if (emptyIdx.length > 0) {
+        // 空いているマスだけ、いまある語と重複しないお題で埋める
+        const picks = randomWords(emptyIdx.length, filled)
+        const words = b.words.slice()
+        emptyIdx.forEach((idx, k) => {
+          if (picks[k] !== undefined) words[idx] = picks[k]
+        })
+        return { ...b, words }
+      }
+      // すべて埋まっている → まるごとシャッフルし直す
+      const picks = randomWords(b.words.length)
+      return { ...b, words: b.words.map((_, i) => picks[i] ?? '') }
+    })
   }
 
   const goPlay = () => {
@@ -242,6 +263,7 @@ export default function App() {
           onBack={() => setScreen('home')}
           onReset={reset}
           onEditCell={setEditorIndex}
+          onRandom={randomFill}
           onPlay={goPlay}
           onOpenSwap={() => setSwapOpen(true)}
         />

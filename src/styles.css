@@ -290,6 +290,43 @@ h1.logo {
   font-weight: 500;
   margin: -4px 2px 12px;
 }
+.hint-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -4px 2px 12px;
+}
+.hint-row .hint {
+  margin: 0;
+  flex: 1;
+}
+.randfill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--jp);
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--ink);
+  background: var(--sun);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  padding: 7px 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--ink);
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s;
+}
+.randfill:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+.randfill:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 2px;
+}
 
 .grid {
   display: grid;

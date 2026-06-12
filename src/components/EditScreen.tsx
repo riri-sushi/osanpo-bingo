@@ -1,12 +1,13 @@
 import { fontFor } from '../constants'
 import type { BoardState } from '../types'
-import { SwapIcon } from '../icons'
+import { SwapIcon, DiceIcon } from '../icons'
 
 type Props = {
   board: BoardState
   onBack: () => void
   onReset: () => void
   onEditCell: (index: number) => void
+  onRandom: () => void
   onPlay: () => void
   onOpenSwap: () => void
 }
@@ -16,9 +17,11 @@ export function EditScreen({
   onBack,
   onReset,
   onEditCell,
+  onRandom,
   onPlay,
   onOpenSwap,
 }: Props) {
+  const allFilled = board.words.every((w) => w)
   return (
     <section className="screen" id="edit">
       <div className="topbar">
@@ -31,7 +34,17 @@ export function EditScreen({
           最初から
         </button>
       </div>
-      <p className="hint">マスをタップして、見つけたいものを書こう（50文字まで）</p>
+      <div className="hint-row">
+        <p className="hint">マスをタップして、見つけたいものを書こう（50文字まで）</p>
+        <button
+          className="randfill"
+          onClick={onRandom}
+          aria-label={allFilled ? 'お題をシャッフルする' : 'あいているマスをランダムで埋める'}
+        >
+          <DiceIcon />
+          {allFilled ? 'シャッフル' : 'ランダム'}
+        </button>
+      </div>
       <div
         className="grid"
         style={{ gridTemplateColumns: `repeat(${board.size},1fr)` }}
