@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- おさんぽビンゴ アプリアイコン：クリーム背景＋太い黒輪郭＋ポップ5色の3×3グリッド（シール感） -->
+  <rect width="512" height="512" fill="#FFF6E9"/>
+  <g transform="translate(106 106)" stroke="#2B2D42" stroke-width="14" stroke-linejoin="round">
+    <!-- セル一辺=88, 間隔=12, 全体=88*3+12*2=288 -->
+    <!-- row 0 -->
+    <rect x="0"   y="0"   width="88" height="88" rx="20" fill="#FF5C7A"/>
+    <rect x="100" y="0"   width="88" height="88" rx="20" fill="#FFD23F"/>
+    <rect x="200" y="0"   width="88" height="88" rx="20" fill="#2EC4B6"/>
+    <!-- row 1 -->
+    <rect x="0"   y="100" width="88" height="88" rx="20" fill="#FFD23F"/>
+    <rect x="100" y="100" width="88" height="88" rx="20" fill="#4D9DE0"/>
+    <rect x="200" y="100" width="88" height="88" rx="20" fill="#FF5C7A"/>
+    <!-- row 2 -->
+    <rect x="0"   y="200" width="88" height="88" rx="20" fill="#9B5DE5"/>
+    <rect x="100" y="200" width="88" height="88" rx="20" fill="#2EC4B6"/>
+    <rect x="200" y="200" width="88" height="88" rx="20" fill="#FFD23F"/>
+  </g>
+  <!-- 中央のチェックマーク（見つけた印）。輪郭付きの白丸＋ミントのチェック -->
+  <g transform="translate(256 256)">
+    <circle r="58" fill="#FFFFFF" stroke="#2B2D42" stroke-width="14"/>
+    <path d="M-26 2 L-6 24 L30 -22" fill="none" stroke="#2EC4B6" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
