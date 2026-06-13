@@ -610,6 +610,9 @@ textarea:focus-visible {
 .share-alt button:active {
   color: var(--ink);
 }
+.celebrate .btn + .btn {
+  margin-top: 12px;
+}
 .celebrate .close {
   margin-top: 20px;
   background: none;
@@ -622,7 +625,115 @@ textarea:focus-visible {
   font-size: 0.9rem;
 }
 
+/* ホーム：保存ギャラリーへの入口 */
+.gallery-link {
+  display: block;
+  margin: 22px auto 0;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  font-family: var(--jp);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* 保存ビンゴのギャラリー */
+.empty-note {
+  text-align: center;
+  color: #6a6c7d;
+  font-weight: 700;
+  line-height: 1.7;
+  margin-top: 48px;
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 6px;
+}
+.gallery-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: #fff;
+  border: 4px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 0 5px 0 var(--ink);
+  cursor: pointer;
+}
+.gallery-item:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+.gallery-item img {
+  width: 100%;
+  border-radius: 10px;
+  display: block;
+}
+.gallery-date {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #6a6c7d;
+  text-align: center;
+}
+.saved-view {
+  background: var(--cream);
+  width: 100%;
+  border-radius: 26px 26px 0 0;
+  border-top: 5px solid var(--ink);
+  padding: 22px 18px max(26px, env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 0 rgba(43, 45, 66, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+.saved-view img {
+  width: 72%;
+  max-width: 240px;
+  border: 4px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 0 6px 0 var(--ink);
+  background: #fff;
+}
+.saved-date {
+  font-weight: 800;
+  color: #6a6c7d;
+  margin: 12px 0 16px;
+}
+.saved-view .btn {
+  width: 100%;
+  max-width: 280px;
+}
+.saved-view .btn-row {
+  width: 100%;
+  max-width: 280px;
+  margin-top: 10px;
+}
+.btn.ghost.danger {
+  color: var(--coral);
+}
+.close-text {
+  margin-top: 18px;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  font-family: var(--jp);
+  font-weight: 700;
+  color: #6a6c7d;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
 /* 交換シート */
+.swap {
+  max-height: 86vh;
+  overflow-y: auto;
+}
 .swap textarea {
   width: 100%;
   height: 70px;
@@ -651,6 +762,62 @@ textarea:focus-visible {
   font-weight: 700;
   font-size: 0.82rem;
   margin: 8px 2px 0;
+}
+.qr-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  background: #fff;
+  border: 4px solid var(--ink);
+  border-radius: 18px;
+  padding: 12px;
+}
+.qr-img {
+  width: 180px;
+  height: 180px;
+  image-rendering: pixelated;
+}
+.code-fold {
+  margin-top: 10px;
+}
+.code-fold summary {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #6a6c7d;
+  cursor: pointer;
+  list-style: revert;
+  padding: 4px 2px;
+}
+.code-fold textarea {
+  margin-top: 8px;
+}
+
+/* QR スキャナ（カメラ画面に重ねる枠とヒント） */
+.qr-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 64vw;
+  max-width: 280px;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 4px solid #fff;
+  border-radius: 22px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.qr-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 96px;
+  text-align: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
 }
 
 /* カメラ撮影 */

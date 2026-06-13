@@ -1,4 +1,4 @@
-import type { BoardState } from './types'
+import type { BoardState, SavedCard } from './types'
 
 // ── 軽量データ（サイズ・文字・マーク・写真キー）は localStorage に保存 ──
 const BOARD_KEY = 'osanpo-bingo:board'
@@ -39,13 +39,16 @@ export function clearBoard() {
 // ── 写真データは重いので IndexedDB に保存（localStorage の容量上限を避ける）──
 const DB_NAME = 'osanpo-bingo'
 const STORE = 'photos'
+const SAVED_STORE = 'saved' // やり切ったビンゴ（画像＋メタ）
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1)
+    const req = indexedDB.open(DB_NAME, 2)
     req.onupgradeneeded = () => {
       const db = req.result
       if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE)
+      if (!db.objectStoreNames.contains(SAVED_STORE))
+        db.createObjectStore(SAVED_STORE, { keyPath: 'id' })
     }
     req.onsuccess = () => resolve(req.result)
     req.onerror = () => reject(req.error)
@@ -105,4 +108,40 @@ export async function loadPhotoUrls(
     }),
   )
   return out
+}
+
+// ── やり切ったビンゴの保存・一覧・削除 ──
+export async function saveCompleted(card: SavedCard): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SAVED_STORE, 'readwrite')
+    tx.objectStore(SAVED_STORE).put(card)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function listSaved(): Promise<SavedCard[]> {
+  const db = await openDB()
+  return new Promise((resolve) => {
+    const tx = db.transaction(SAVED_STORE, 'readonly')
+    const req = tx.objectStore(SAVED_STORE).getAll()
+    req.onsuccess = () => {
+      const cards = (req.result as SavedCard[]) ?? []
+      // 新しい順
+      cards.sort((a, b) => b.createdAt - a.createdAt)
+      resolve(cards)
+    }
+    req.onerror = () => resolve([])
+  })
+}
+
+export async function deleteSaved(id: string): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve) => {
+    const tx = db.transaction(SAVED_STORE, 'readwrite')
+    tx.objectStore(SAVED_STORE).delete(id)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => resolve()
+  })
 }

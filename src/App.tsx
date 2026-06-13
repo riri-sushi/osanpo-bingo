@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { BoardState, Screen, Size } from './types'
+import type { BoardState, SavedCard, Screen, Size } from './types'
 import { evaluate } from './bingo'
 import {
   saveBoard,
@@ -9,6 +9,9 @@ import {
   putPhoto,
   deletePhoto,
   loadPhotoUrls,
+  saveCompleted,
+  listSaved,
+  deleteSaved,
 } from './storage'
 import { encodeCard, decodeCard } from './swap'
 import { randomWords } from './walkItems'
@@ -22,6 +25,7 @@ import { EditorSheet } from './components/EditorSheet'
 import { SwapSheet } from './components/SwapSheet'
 import { Celebrate } from './components/Celebrate'
 import { CameraSheet } from './components/CameraSheet'
+import { Gallery } from './components/Gallery'
 
 const SCREEN_KEY = 'osanpo-bingo:screen'
 
@@ -50,6 +54,8 @@ export default function App() {
   const [celebrateOpen, setCelebrateOpen] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [loaded, setLoaded] = useState(false)
+  const [saved, setSaved] = useState<SavedCard[]>([])
+  const [savedThisBingo, setSavedThisBingo] = useState(false)
 
   const celebrated = useRef(false)
   const cardBlob = useRef<Blob | null>(null)
@@ -59,16 +65,17 @@ export default function App() {
 
   // ── 復元：ブラウザを閉じても続きから ──
   useEffect(() => {
-    const saved = loadBoard()
-    if (saved) {
-      setBoard(saved)
+    const restored = loadBoard()
+    if (restored) {
+      setBoard(restored)
       const s = localStorage.getItem(SCREEN_KEY) as Screen | null
       setScreen(s === 'play' || s === 'edit' ? s : 'edit')
       // すでにビンゴ済みの盤面を復元した場合は演出を再発火しない
-      if (evaluate(saved.size, saved.marked).bingo) celebrated.current = true
-      loadPhotoUrls(saved.photoIds).then(setPhotoUrls)
+      if (evaluate(restored.size, restored.marked).bingo) celebrated.current = true
+      loadPhotoUrls(restored.photoIds).then(setPhotoUrls)
     }
     setLoaded(true)
+    listSaved().then(setSaved)
   }, [])
 
   // ── 自動保存 ──
@@ -88,6 +95,7 @@ export default function App() {
     if (bingo && !celebrated.current) {
       celebrated.current = true
       setCelebrateOpen(true)
+      setSavedThisBingo(false)
       // 紙吹雪
       if (fxCanvas.current && phoneEl.current) {
         stopConfetti.current?.()
@@ -234,20 +242,76 @@ export default function App() {
     stopConfetti.current?.()
   }
 
-  const doShare = async () => {
-    if (!cardBlob.current) {
-      try {
-        cardBlob.current = await makeCardImage(board, photoUrls)
-      } catch {
-        alert('画像を作れませんでした。もう一度お試しください。')
-        return
-      }
+  // 現在の盤面の PNG を用意（生成済みなら使い回す）
+  const ensureBlob = async (): Promise<Blob | null> => {
+    if (cardBlob.current) return cardBlob.current
+    try {
+      cardBlob.current = await makeCardImage(board, photoUrls)
+      return cardBlob.current
+    } catch {
+      return null
     }
-    const result = await shareCard(cardBlob.current)
+  }
+
+  // 指定の画像を標準シェアシートで共有
+  const doShareImage = async (blob: Blob) => {
+    const result = await shareCard(blob)
     if (result === 'fallback-saved')
       alert(
         'この端末は画像の直接シェアに未対応のため、画像を保存しました。LINE / X に手動で添付してください。',
       )
+  }
+
+  const doShare = async () => {
+    const blob = await ensureBlob()
+    if (!blob) {
+      alert('画像を作れませんでした。もう一度お試しください。')
+      return
+    }
+    await doShareImage(blob)
+  }
+
+  // LINE / X：結果画像を添えて投稿してもらう
+  const shareVia = async (to: 'line' | 'x') => {
+    const blob = await ensureBlob()
+    if (!blob) {
+      alert('画像を作れませんでした。もう一度お試しください。')
+      return
+    }
+    const app = to === 'line' ? 'LINE' : 'X'
+    const result = await (to === 'line' ? shareToLine(blob) : shareToX(blob))
+    if (result === 'clipboard')
+      alert(`画像をコピーしました。${app}の投稿に貼り付けてね。`)
+    else if (result === 'saved')
+      alert(`画像を保存しました。${app}の投稿に添付してね。`)
+  }
+
+  // やり切ったビンゴを保存
+  const saveThisCard = async (image?: Blob) => {
+    const blob = image ?? (await ensureBlob())
+    if (!blob) {
+      alert('画像を作れませんでした。もう一度お試しください。')
+      return
+    }
+    const card: SavedCard = {
+      id: makeId(),
+      createdAt: Date.now(),
+      size: board.size,
+      words: board.words.slice(),
+      image: blob,
+    }
+    try {
+      await saveCompleted(card)
+      setSaved((prev) => [card, ...prev])
+      setSavedThisBingo(true)
+    } catch {
+      alert('保存できませんでした。空き容量を確認してね。')
+    }
+  }
+
+  const removeSaved = async (id: string) => {
+    await deleteSaved(id)
+    setSaved((prev) => prev.filter((c) => c.id !== id))
   }
 
   const code = encodeCard(board.size, board.words)
@@ -256,7 +320,22 @@ export default function App() {
     <div className="phone" ref={phoneEl}>
       <div className="notch" />
 
-      {screen === 'home' && <Home onPick={pickSize} />}
+      {screen === 'home' && (
+        <Home
+          onPick={pickSize}
+          onOpenGallery={() => setScreen('gallery')}
+          savedCount={saved.length}
+        />
+      )}
+      {screen === 'gallery' && (
+        <Gallery
+          cards={saved}
+          onBack={() => setScreen('home')}
+          onShare={(image) => doShareImage(image)}
+          onSaveImg={(image) => saveImage(image)}
+          onDelete={removeSaved}
+        />
+      )}
       {screen === 'edit' && (
         <EditScreen
           board={board}
@@ -285,8 +364,10 @@ export default function App() {
           previewUrl={previewUrl}
           onShare={doShare}
           onSaveImg={() => cardBlob.current && saveImage(cardBlob.current)}
-          onLine={shareToLine}
-          onX={shareToX}
+          onLine={() => shareVia('line')}
+          onX={() => shareVia('x')}
+          onSaveCard={() => saveThisCard()}
+          saved={savedThisBingo}
           onClose={closeCelebrate}
         />
       )}

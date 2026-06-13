@@ -6,6 +6,8 @@ type Props = {
   onSaveImg: () => void
   onLine: () => void
   onX: () => void
+  onSaveCard: () => void
+  saved: boolean
   onClose: () => void
 }
 
@@ -15,6 +17,8 @@ export function Celebrate({
   onSaveImg,
   onLine,
   onX,
+  onSaveCard,
+  saved,
   onClose,
 }: Props) {
   return (
@@ -35,6 +39,13 @@ export function Celebrate({
       <button className="btn coral" onClick={onShare}>
         <ShareIcon />
         シェアする
+      </button>
+      <button
+        className="btn mint"
+        onClick={onSaveCard}
+        disabled={saved}
+      >
+        {saved ? '保存した！' : 'このビンゴを保存'}
       </button>
       <div className="share-alt">
         <button onClick={onSaveImg}>画像を保存</button>

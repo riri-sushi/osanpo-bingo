@@ -1,7 +1,13 @@
 import { SIZE_CARDS } from '../constants'
 import type { Size } from '../types'
 
-export function Home({ onPick }: { onPick: (size: Size) => void }) {
+type Props = {
+  onPick: (size: Size) => void
+  onOpenGallery: () => void
+  savedCount: number
+}
+
+export function Home({ onPick, onOpenGallery, savedCount }: Props) {
   return (
     <section className="screen" id="home">
       <div className="eyebrow">さんぽが冒険になる</div>
@@ -36,6 +42,11 @@ export function Home({ onPick }: { onPick: (size: Size) => void }) {
           </button>
         ))}
       </div>
+      {savedCount > 0 && (
+        <button type="button" className="gallery-link" onClick={onOpenGallery}>
+          ほぞんしたビンゴ（{savedCount}）
+        </button>
+      )}
     </section>
   )
 }
